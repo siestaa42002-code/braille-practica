@@ -1,0 +1,19 @@
+{
+  "name": "Practica Braille",
+  "short_name": "Braille",
+  "description": "Aprende el alfabeto braille con ejercicios interactivos, traductor y dictados en español e inglés.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F1E6",
+  "theme_color": "#F5F1E6",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
