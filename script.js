@@ -502,13 +502,15 @@ function inicializarTraductor() {
   const textarea = document.getElementById("traductorTexto");
   const salida = document.getElementById("traductorBraille");
 
-  textarea.addEventListener("input", () => {
+  const traducirAhora = () => {
     salida.textContent = textoABraille(textarea.value, estado.idioma);
-  });
+  };
 
-  // Estado inicial con un ejemplo
+  textarea.addEventListener("input", traducirAhora);
+
+  // Texto de ejemplo inicial
   textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
-  salida.textContent = textoABraille(textarea.value, estado.idioma);
+  traducirAhora();
 
   document.getElementById("btnCopiarBraille").addEventListener("click", async () => {
     try {
@@ -518,6 +520,12 @@ function inicializarTraductor() {
       mostrarToast("No se pudo copiar");
     }
   });
+
+  // Exponer la función para que el cambio de idioma la pueda llamar
+  window._retraducirTraductor = () => {
+    textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
+    traducirAhora();
+  };
 }
 
 // ===========================================================================
@@ -757,7 +765,7 @@ function init() {
   inicializarTraductor();
 
   // Dropdowns
-  configurarDropdown("dropdownIdioma", (valor) => {
+configurarDropdown("dropdownIdioma", (valor) => {
     estado.idioma = valor;
     localStorage.setItem(STORAGE.idioma, valor);
     document.documentElement.lang = valor;
@@ -766,9 +774,8 @@ function init() {
     if (estado.vistaActiva === "aprender") siguienteEjercicioAprender();
     if (estado.vistaActiva === "escribir") siguienteEjercicioEscribir();
     if (estado.vistaActiva === "dictado") siguienteDictado();
-    if (estado.vistaActiva === "traductor") {
-      const textarea = document.getElementById("traductorTexto");
-      document.getElementById("traductorBraille").textContent = textoABraille(textarea.value, valor);
+    if (typeof window._retraducirTraductor === "function") {
+      window._retraducirTraductor();
     }
   });
 
