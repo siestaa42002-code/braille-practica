@@ -764,57 +764,77 @@ function init() {
   inicializarToggleVista();
   inicializarTraductor();
 
-  // Dropdowns
-configurarDropdown("dropdownIdioma", (valor) => {
-    estado.idioma = valor;
-    localStorage.setItem(STORAGE.idioma, valor);
-    document.documentElement.lang = valor;
-    renderAlfabeto();
-    document.getElementById("caracterDestacado").hidden = true;
-    if (estado.vistaActiva === "aprender") siguienteEjercicioAprender();
-    if (estado.vistaActiva === "escribir") siguienteEjercicioEscribir();
-    if (estado.vistaActiva === "dictado") siguienteDictado();
-    if (typeof window._retraducirTraductor === "function") {
-      window._retraducirTraductor();
-    }
+  // Dropdownsfunction configurarDropdown(id, onChange) {
+  const dropdown = document.getElementById(id);
+  if (!dropdown) return;
+  const toggle = dropdown.querySelector(".dropdown-toggle");
+  const menu = dropdown.querySelector(".dropdown-menu");
+
+  // Listener delegado en el menú (más robusto que items individuales)
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const li = e.target.closest("li[data-value]");
+    if (!li) return;
+    const valor = li.dataset.value;
+    const texto = li.textContent.replace(/^✓\s*/, "").trim();
+
+    // Actualizar UI
+    menu.querySelectorAll("li").forEach((item) => item.classList.remove("selected"));
+    li.classList.add("selected");
+    toggle.querySelector(".dropdown-value").textContent = texto;
+
+    // Cerrar
+    dropdown.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+
+    // Llamar callback
+    console.log(`[Dropdown ${id}] Cambio a:`, valor);
+    onChange(valor);
   });
 
-  configurarDropdown("dropdownNivel", (valor) => {
-    estado.aprender.nivel = parseInt(valor, 10);
-    siguienteEjercicioAprender();
-  });
-
-  // Tema
-  document.getElementById("btnTema").addEventListener("click", () => {
-    estado.tema = estado.tema === "claro" ? "oscuro" : "claro";
-    localStorage.setItem(STORAGE.tema, estado.tema);
-    aplicarTema();
-  });
-
-  // Botones de cada vista
-  document.getElementById("btnComprobarEscribir").addEventListener("click", comprobarEscribir);
-  document.getElementById("btnLimpiarEscribir").addEventListener("click", limpiarEscribir);
-  document.getElementById("btnReproducir").addEventListener("click", reproducirPalabra);
-  document.getElementById("btnComprobarDictado").addEventListener("click", comprobarDictado);
-  document.getElementById("btnSaltarDictado").addEventListener("click", siguienteDictado);
-  document.getElementById("btnIniciarReto").addEventListener("click", iniciarReto);
-
-  // Cerrar dropdowns al hacer clic fuera
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".dropdown")) {
-      document.querySelectorAll(".dropdown.open").forEach((d) => {
+  // Abrir/cerrar
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const estaAbierto = dropdown.classList.contains("open");
+    document.querySelectorAll(".dropdown.open").forEach((d) => {
+      if (d !== dropdown) {
         d.classList.remove("open");
         d.querySelector(".dropdown-toggle").setAttribute("aria-expanded", "false");
-      });
+      }
+    });
+    dropdown.classList.toggle("open", !estaAbierto);
+    toggle.setAttribute("aria-expanded", !estaAbierto);
+  });
+
+  // Teclado en el botón
+  toggle.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+      e.preventDefault();
+      toggle.click();
+      const primer = menu.querySelector("li");
+      if (primer) primer.focus();
     }
   });
 
-  configurarAtajosEscribir();
-  inicializarPWA();
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
+  // Teclado en los items
+  menu.querySelectorAll("li").forEach((li, i, lista) => {
+    li.tabIndex = 0;
+    li.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        (lista[i + 1] || lista[0]).focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        (lista[i - 1] || lista[lista.length - 1]).focus();
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        li.click();
+        toggle.focus();
+      } else if (e.key === "Escape") {
+        dropdown.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.focus();
+      }
+    });
+  });
 }
