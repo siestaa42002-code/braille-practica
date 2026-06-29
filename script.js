@@ -26,6 +26,9 @@ const estado = {
   reto: { activo: false, tiempoRestante: 60, aciertos: 0, fallos: 0, caracterActual: null, intervalo: null },
 };
 
+// Exponer estado globalmente para que traducciones.js lo lea
+window.estado = estado;
+
 // ===========================================================================
 // Helpers
 // ===========================================================================
@@ -68,6 +71,18 @@ function crearCeldaBraille(puntosActivos = [], { interactiva = false, tamano = "
   return contenedor;
 }
 
+function formatearFecha() {
+  const meses = estado.idioma === "es"
+    ? ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const hoy = new Date();
+  return `${meses[hoy.getMonth()]} ${hoy.getFullYear()}`;
+}
+
+function actualizarFechaCabecera() {
+  document.getElementById("fechaActual").textContent = formatearFecha();
+}
+
 // ===========================================================================
 // Estadísticas
 // ===========================================================================
@@ -105,32 +120,46 @@ function registrarFallo() {
 // Cambio de vista
 // ===========================================================================
 
+function cambiarVista(vista) {
+  document.querySelectorAll(".nav-link[data-view]").forEach((b) => {
+    b.classList.remove("active");
+    b.setAttribute("aria-selected", "false");
+  });
+  const btn = document.querySelector(`.nav-link[data-view="${vista}"]`);
+  if (btn) {
+    btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+  }
+  estado.vistaActiva = vista;
+
+  document.querySelectorAll(".vista").forEach((v) => v.classList.add("hidden"));
+  const mapa = {
+    alfabeto: "vistaAlfabeto",
+    aprender: "vistaAprender",
+    escribir: "vistaEscribir",
+    dictado: "vistaDictado",
+    traductor: "vistaTraductor",
+    cronometro: "vistaCronometro",
+  };
+  document.getElementById(mapa[vista]).classList.remove("hidden");
+
+  if (vista === "aprender") siguienteEjercicioAprender();
+  if (vista === "escribir") siguienteEjercicioEscribir();
+  if (vista === "dictado") siguienteDictado();
+
+  // Scroll a la sección
+  document.getElementById(mapa[vista]).scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function inicializarToggleVista() {
-  document.querySelectorAll(".toggle-btn[data-view]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const vista = btn.dataset.view;
-      document.querySelectorAll(".toggle-btn[data-view]").forEach((b) => {
-        b.classList.remove("active");
-        b.setAttribute("aria-selected", "false");
-      });
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected", "true");
-      estado.vistaActiva = vista;
-
-      document.querySelectorAll(".vista").forEach((v) => v.classList.add("hidden"));
-      const mapa = {
-        alfabeto: "vistaAlfabeto",
-        aprender: "vistaAprender",
-        escribir: "vistaEscribir",
-        dictado: "vistaDictado",
-        traductor: "vistaTraductor",
-        cronometro: "vistaCronometro",
-      };
-      document.getElementById(mapa[vista]).classList.remove("hidden");
-
-      if (vista === "aprender") siguienteEjercicioAprender();
-      if (vista === "escribir") siguienteEjercicioEscribir();
-      if (vista === "dictado") siguienteDictado();
+  document.querySelectorAll(".nav-link[data-view]").forEach((btn) => {
+    btn.addEventListener("click", () => cambiarVista(btn.dataset.view));
+  });
+  // Links del índice
+  document.querySelectorAll("[data-vista]").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      cambiarVista(a.dataset.vista);
     });
   });
 }
@@ -159,7 +188,7 @@ function renderAlfabeto() {
     const celdaMini = crearCeldaBraille(item.puntos, { tamano: "alfabeto" });
     card.appendChild(celdaMini);
 
-    card.setAttribute("aria-label", `${nombreCaracter(item.caracter)}, puntos ${item.puntos.join(", ")}`);
+    card.setAttribute("aria-label", `${nombreCaracter(item.caracter)}, ${item.puntos.join(", ")}`);
     card.addEventListener("click", () => destacarCaracter(item));
     card.addEventListener("mouseenter", () => destacarCaracter(item, false));
 
@@ -188,14 +217,14 @@ function destacarCaracter(item, marcarActivo = true) {
   });
 
   document.getElementById("caracterTexto").textContent = item.caracter;
-  document.getElementById("puntosTexto").textContent = `Puntos ${item.puntos.join(", ")}`;
+  document.getElementById("puntosTexto").textContent = item.puntos.join(" · ");
   document.getElementById("notaTexto").textContent = item.nota || "";
 }
 
 function inicializarFiltrosAlfabeto() {
-  document.querySelectorAll(".filter-btn[data-categoria]").forEach((btn) => {
+  document.querySelectorAll(".filtro[data-categoria]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-btn[data-categoria]").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".filtro[data-categoria]").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       estado.categoria = btn.dataset.categoria;
       renderAlfabeto();
@@ -246,7 +275,7 @@ function siguienteEjercicioAprender() {
 
   document.getElementById("feedbackAprender").textContent = "";
   document.getElementById("feedbackAprender").className = "feedback";
-  anunciar("Nueva celda. Identifica el caracter.");
+  anunciar(t("anuncioNuevaCelda"));
 }
 
 function responderAprender(seleccion, boton) {
@@ -256,20 +285,20 @@ function responderAprender(seleccion, boton) {
 
   if (seleccion === correcto) {
     boton.classList.add("correcta");
-    feedback.textContent = "Correcto";
+    feedback.textContent = t("feedbackCorrecto");
     feedback.className = "feedback acierto";
     registrarAcierto();
-    anunciar(`Correcto. Era ${nombreCaracter(correcto)}.`);
+    anunciar(`${t("anuncioCorrecto")} ${nombreCaracter(correcto)}.`);
     setTimeout(siguienteEjercicioAprender, 900);
   } else {
     boton.classList.add("incorrecta");
     document.querySelectorAll("#opcionesAprender .opcion-btn").forEach((b) => {
       if (b.textContent === correcto) b.classList.add("correcta");
     });
-    feedback.textContent = `Era ${correcto.toUpperCase()}`;
+    feedback.textContent = `${t("feedbackEra")} ${correcto.toUpperCase()}`;
     feedback.className = "feedback fallo";
     registrarFallo();
-    anunciar(`Incorrecto. Era ${nombreCaracter(correcto)}.`);
+    anunciar(`${t("anuncioIncorrecto")} ${nombreCaracter(correcto)}.`);
     setTimeout(siguienteEjercicioAprender, 1600);
   }
 }
@@ -289,7 +318,7 @@ function siguienteEjercicioEscribir() {
   document.getElementById("feedbackEscribir").textContent = "";
   document.getElementById("feedbackEscribir").className = "feedback";
 
-  anunciar(`Escribe el caracter ${nombreCaracter(caracter)} en braille.`);
+  anunciar(`${t("anuncioEscribir")} ${nombreCaracter(caracter)}.`);
 }
 
 function renderCeldaEscribir() {
@@ -302,7 +331,6 @@ function renderCeldaEscribir() {
     punto.className = "punto";
     punto.dataset.punto = numero;
     if (estado.escribir.puntosActivos.has(numero)) punto.classList.add("activo");
-    punto.setAttribute("aria-label", `Punto ${numero}, ${estado.escribir.puntosActivos.has(numero) ? "activo" : "inactivo"}`);
     punto.setAttribute("aria-pressed", estado.escribir.puntosActivos.has(numero));
     punto.addEventListener("click", () => {
       if (estado.escribir.puntosActivos.has(numero)) {
@@ -324,16 +352,15 @@ function comprobarEscribir() {
 
   const feedback = document.getElementById("feedbackEscribir");
   if (acierta) {
-    feedback.textContent = "Correcto. Siguiente caracter en 1 segundo.";
+    feedback.textContent = t("feedbackCorrectoSig");
     feedback.className = "feedback acierto";
     registrarAcierto();
-    anunciar("Correcto.");
+    anunciar(t("feedbackCorrecto"));
     setTimeout(siguienteEjercicioEscribir, 1100);
   } else {
-    feedback.textContent = `Incorrecto. Eran los puntos ${correcto.join(", ")}.`;
+    feedback.textContent = `${t("feedbackErroneoPuntos")} ${correcto.join(", ")}.`;
     feedback.className = "feedback fallo";
     registrarFallo();
-    anunciar(`Incorrecto. Eran los puntos ${correcto.join(" ")}.`);
   }
 }
 
@@ -379,7 +406,7 @@ function siguienteDictado() {
   estado.dictado.celdas = estado.dictado.palabraActual.split("").map(() => new Set());
   estado.dictado.indiceActivo = 0;
 
-  document.getElementById("palabraActual").textContent = `${estado.dictado.palabraActual.length} caracteres`;
+  document.getElementById("palabraActual").textContent = `${estado.dictado.palabraActual.length} ${t("sufijoCaracteres")}`;
   renderCeldasDictado();
   document.getElementById("feedbackDictado").textContent = "";
   document.getElementById("feedbackDictado").className = "feedback";
@@ -393,7 +420,7 @@ function renderCeldasDictado() {
   estado.dictado.celdas.forEach((puntos, i) => {
     const celda = crearCeldaBraille([...puntos], { interactiva: true });
     if (i === estado.dictado.indiceActivo) {
-      celda.style.outline = "2px solid var(--ambar)";
+      celda.style.outline = "2px solid var(--acento)";
       celda.style.outlineOffset = "2px";
     }
     celda.dataset.indice = i;
@@ -420,7 +447,6 @@ function renderCeldasDictado() {
 
 function reproducirPalabra() {
   if (!("speechSynthesis" in window)) {
-    mostrarToast("Tu navegador no soporta audio.");
     document.getElementById("palabraActual").textContent = estado.dictado.palabraActual;
     return;
   }
@@ -447,18 +473,16 @@ function comprobarDictado() {
 
   const feedback = document.getElementById("feedbackDictado");
   if (aciertos === total) {
-    feedback.textContent = `Perfecto. Acertaste las ${total} letras.`;
+    feedback.textContent = t("feedbackPerfecto", { n: total });
     feedback.className = "feedback acierto";
     registrarAcierto();
-    document.getElementById("palabraActual").textContent = `Era: "${palabra}"`;
-    anunciar(`Perfecto. La palabra era ${palabra}.`);
+    document.getElementById("palabraActual").textContent = `"${palabra}"`;
     setTimeout(siguienteDictado, 2500);
   } else {
-    feedback.textContent = `Acertaste ${aciertos} de ${total}. La palabra era "${palabra}".`;
+    feedback.textContent = `${t("feedbackParcial", { a: aciertos, t: total })} "${palabra}".`;
     feedback.className = "feedback fallo";
     registrarFallo();
-    document.getElementById("palabraActual").textContent = `Era: "${palabra}"`;
-    anunciar(`Acertaste ${aciertos} de ${total}. La palabra era ${palabra}.`);
+    document.getElementById("palabraActual").textContent = `"${palabra}"`;
   }
 }
 
@@ -476,26 +500,26 @@ function inicializarTraductor() {
 
   textarea.addEventListener("input", traducirAhora);
 
-  textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
+  textarea.value = t("ejemploTexto");
   traducirAhora();
 
   document.getElementById("btnCopiarBraille").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(salida.textContent);
-      mostrarToast("Braille copiado al portapapeles");
+      mostrarToast(t("toastCopiado"));
     } catch (e) {
-      mostrarToast("No se pudo copiar");
+      mostrarToast(t("toastNoCopia"));
     }
   });
 
   window._retraducirTraductor = () => {
-    textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
+    textarea.value = t("ejemploTexto");
     traducirAhora();
   };
 }
 
 // ===========================================================================
-// Vista: Reto cronometrado
+// Vista: Reto
 // ===========================================================================
 
 function iniciarReto() {
@@ -511,8 +535,8 @@ function iniciarReto() {
   const area = document.getElementById("retoArea");
   area.innerHTML = `
     <div class="celda-grande" id="celdaReto"></div>
-    <p class="instruccion">¿Qué caracter es este?</p>
-    <div id="opcionesReto" class="opciones-grid"></div>
+    <p class="pregunta">${t("preguntaCaracter")}</p>
+    <div id="opcionesReto" class="opciones"></div>
   `;
 
   siguienteEjercicioReto();
@@ -578,21 +602,21 @@ function terminarReto() {
   const area = document.getElementById("retoArea");
   area.innerHTML = `
     <div style="text-align: center;">
-      <p style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem;">
-        Tiempo terminado
+      <p style="font-family: var(--serif-display); font-size: 1.75rem; font-style: italic; margin-bottom: 0.5rem;">
+        ${t("retoTerminado")}
       </p>
-      <p style="color: var(--texto-soft); margin-bottom: 2rem;">
-        ${estado.reto.aciertos} aciertos · ${estado.reto.fallos} fallos
+      <p style="color: var(--tinta-suave); margin-bottom: 2rem; font-style: italic;">
+        ${t("retoFinal", { a: estado.reto.aciertos, f: estado.reto.fallos })}
       </p>
-      <button id="btnReiniciarReto" class="btn-primary btn-grande" type="button">Volver a jugar</button>
+      <button id="btnReiniciarReto" class="btn-relleno btn-grande" type="button">${t("btnVolver")}</button>
     </div>
   `;
   document.getElementById("btnReiniciarReto").addEventListener("click", iniciarReto);
-  anunciar(`Reto terminado. ${estado.reto.aciertos} aciertos y ${estado.reto.fallos} fallos.`);
+  anunciar(`${t("anuncioRetoTerminado")} ${estado.reto.aciertos}, ${estado.reto.fallos}.`);
 }
 
 // ===========================================================================
-// Dropdowns custom
+// Dropdowns
 // ===========================================================================
 
 function configurarDropdown(id, onChange) {
@@ -606,7 +630,7 @@ function configurarDropdown(id, onChange) {
     const li = e.target.closest("li[data-value]");
     if (!li) return;
     const valor = li.dataset.value;
-    const texto = li.textContent.replace(/^✓\s*/, "").trim();
+    const texto = li.textContent.trim();
 
     menu.querySelectorAll("li").forEach((item) => item.classList.remove("selected"));
     li.classList.add("selected");
@@ -671,8 +695,9 @@ function aplicarTema() {
   document.documentElement.setAttribute("data-theme", estado.tema);
   document.querySelector('meta[name="theme-color"]').setAttribute(
     "content",
-    estado.tema === "claro" ? "#F5F1E6" : "#14202B"
+    estado.tema === "claro" ? "#EEE7D3" : "#1A1814"
   );
+  document.getElementById("iconoTema").textContent = estado.tema === "claro" ? "◐" : "◑";
 }
 
 let deferredInstallPrompt = null;
@@ -690,10 +715,7 @@ function inicializarPWA() {
 
   document.getElementById("linkInstall").addEventListener("click", async (e) => {
     e.preventDefault();
-    if (!deferredInstallPrompt) {
-      mostrarToast("Instalación no disponible en este navegador");
-      return;
-    }
+    if (!deferredInstallPrompt) return;
     deferredInstallPrompt.prompt();
     const { outcome } = await deferredInstallPrompt.userChoice;
     if (outcome === "accepted") {
@@ -704,33 +726,40 @@ function inicializarPWA() {
 }
 
 // ===========================================================================
-// Init
+// Sincronizar selección inicial de dropdowns con el idioma guardado
 // ===========================================================================
 
-function init() {
-  document.getElementById("anioActual").textContent = new Date().getFullYear();
-  aplicarTema();
-  actualizarStatsDOM();
-
-  // Sincronizar selección inicial de idioma
+function sincronizarDropdownIdiomaInicial() {
   document.querySelectorAll("#dropdownIdioma li").forEach((li) => {
     li.classList.toggle("selected", li.dataset.value === estado.idioma);
     if (li.dataset.value === estado.idioma) {
       document.querySelector("#dropdownIdioma .dropdown-value").textContent = li.textContent;
     }
   });
+}
 
-  // Vistas iniciales
+// ===========================================================================
+// Init
+// ===========================================================================
+
+function init() {
+  document.getElementById("anioActual").textContent = new Date().getFullYear();
+  aplicarTema();
+  aplicarTraducciones();
+  actualizarFechaCabecera();
+  actualizarStatsDOM();
+  sincronizarDropdownIdiomaInicial();
+
   renderAlfabeto();
   inicializarFiltrosAlfabeto();
   inicializarToggleVista();
   inicializarTraductor();
 
-  // Dropdowns
   configurarDropdown("dropdownIdioma", (valor) => {
     estado.idioma = valor;
     localStorage.setItem(STORAGE.idioma, valor);
-    document.documentElement.lang = valor;
+    aplicarTraducciones();
+    actualizarFechaCabecera();
     renderAlfabeto();
     document.getElementById("caracterDestacado").hidden = true;
     if (estado.vistaActiva === "aprender") siguienteEjercicioAprender();
@@ -746,14 +775,12 @@ function init() {
     siguienteEjercicioAprender();
   });
 
-  // Tema
   document.getElementById("btnTema").addEventListener("click", () => {
     estado.tema = estado.tema === "claro" ? "oscuro" : "claro";
     localStorage.setItem(STORAGE.tema, estado.tema);
     aplicarTema();
   });
 
-  // Botones
   document.getElementById("btnComprobarEscribir").addEventListener("click", comprobarEscribir);
   document.getElementById("btnLimpiarEscribir").addEventListener("click", limpiarEscribir);
   document.getElementById("btnReproducir").addEventListener("click", reproducirPalabra);
@@ -761,7 +788,6 @@ function init() {
   document.getElementById("btnSaltarDictado").addEventListener("click", siguienteDictado);
   document.getElementById("btnIniciarReto").addEventListener("click", iniciarReto);
 
-  // Cerrar dropdowns al hacer clic fuera
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".dropdown")) {
       document.querySelectorAll(".dropdown.open").forEach((d) => {

@@ -3,18 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Practica braille de forma interactiva. Aprende el alfabeto, escribe, traduce y juega con dictados en español e inglés. Modo offline." />
-  <meta name="theme-color" content="#F5F1E6" />
+  <meta name="description" content="Manual interactivo para aprender braille." />
+  <meta name="theme-color" content="#EEE7D3" />
 
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Practica Braille" />
-  <meta property="og:description" content="Aprende el alfabeto braille con ejercicios interactivos, traductor y dictados en español e inglés." />
+  <meta property="og:description" content="Manual interactivo para aprender braille." />
   <meta property="og:image" content="/og-image.svg" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Practica Braille" />
-  <meta name="twitter:description" content="Aprende braille con ejercicios interactivos." />
-  <meta name="twitter:image" content="/og-image.svg" />
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
@@ -24,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
@@ -32,95 +27,115 @@
 <body>
   <div id="anuncioSr" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="header-left">
-        <span class="logo">
-          <span class="logo-dot d1"></span>
-          <span class="logo-dot d2"></span>
-          <span class="logo-dot d3"></span>
-          <span class="logo-dot d4"></span>
-          <span class="logo-dot d5"></span>
-          <span class="logo-dot d6"></span>
-        </span>
-        <span class="logo-text">Practica Braille</span>
+  <!-- Cabecera tipo masthead de revista -->
+  <header class="masthead">
+    <div class="page">
+      <div class="masthead-row">
+        <span class="masthead-edicion" data-i18n="edicion">N.º 01</span>
+        <span class="masthead-marca">Practica · Braille</span>
+        <span class="masthead-fecha" id="fechaActual"></span>
       </div>
-      <div class="header-controls">
+      <div class="masthead-controls">
         <div class="dropdown" id="dropdownIdioma">
           <button type="button" class="dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
             <span class="dropdown-value">Español</span>
-            <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+            <span class="dropdown-chevron" aria-hidden="true">↓</span>
           </button>
-          <ul class="dropdown-menu" role="listbox" aria-label="Seleccionar idioma">
+          <ul class="dropdown-menu" role="listbox" aria-label="Idioma">
             <li role="option" data-value="es" class="selected">Español</li>
             <li role="option" data-value="en">English</li>
           </ul>
         </div>
-        <button id="btnTema" class="icon-btn" type="button" aria-label="Cambiar tema">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
+        <button id="btnTema" class="btn-linea" type="button" data-i18n-aria="cambiarTema" aria-label="Cambiar tema">
+          <span id="iconoTema">◐</span>
         </button>
       </div>
     </div>
   </header>
 
+  <hr class="regla regla-doble" />
+
   <main>
-    <section class="hero container">
-      <h1 class="hero-title">
-        Aprende
-        <span class="hero-title-accent">braille</span>
-        <span class="hero-subtitle">a tu ritmo</span>
-      </h1>
-      <p class="hero-lead">
-        Ejercicios interactivos para conocer el alfabeto, escribir, traducir y entrenar el oído.
-        Disponible en español e inglés.
-      </p>
-      <div class="stats" id="estadisticas">
-        <div class="stat">
-          <span class="stat-value" id="statRacha">0</span>
-          <span class="stat-label">racha actual</span>
+    <!-- Portada -->
+    <section class="portada page">
+      <div class="portada-grid">
+        <div class="portada-titular">
+          <p class="cintillo" data-i18n="seccion">Edición digital</p>
+          <h1 class="titular">
+            <span data-i18n="heroTitular">El alfabeto</span>
+            <em data-i18n="heroTitularAcento" class="acento">braille</em>
+          </h1>
+          <p class="volante" data-i18n="heroVolante">
+            Un manual interactivo para aprenderlo, escribirlo, leerlo y oírlo. Seis ejercicios, dos idiomas, sin dependencias.
+          </p>
         </div>
-        <div class="stat">
-          <span class="stat-value" id="statMejor">0</span>
-          <span class="stat-label">mejor racha</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value" id="statAciertos">0%</span>
-          <span class="stat-label">aciertos</span>
-        </div>
+        <aside class="portada-indice">
+          <p class="indice-titulo" data-i18n="indiceTitulo">Contenidos</p>
+          <ol class="indice-lista">
+            <li><span class="indice-num">I</span><a href="#alfabeto" data-vista="alfabeto" data-i18n="indiceAlfabeto">El alfabeto entero</a></li>
+            <li><span class="indice-num">II</span><a href="#aprender" data-vista="aprender" data-i18n="indiceAprender">Reconocer una celda</a></li>
+            <li><span class="indice-num">III</span><a href="#escribir" data-vista="escribir" data-i18n="indiceEscribir">Trazar los puntos</a></li>
+            <li><span class="indice-num">IV</span><a href="#dictado" data-vista="dictado" data-i18n="indiceDictado">Escribir al oído</a></li>
+            <li><span class="indice-num">V</span><a href="#traductor" data-vista="traductor" data-i18n="indiceTraductor">Conversión a la vista</a></li>
+            <li><span class="indice-num">VI</span><a href="#cronometro" data-vista="cronometro" data-i18n="indiceCronometro">Contra el reloj</a></li>
+          </ol>
+        </aside>
+      </div>
+
+      <div class="portada-stats">
+        <p class="stats-titulo" data-i18n="statsTitulo">Su práctica</p>
+        <dl class="stats-lista">
+          <div class="stat-fila">
+            <dt data-i18n="statRacha">Racha en curso</dt>
+            <dd><span class="stat-numero" id="statRacha">0</span></dd>
+          </div>
+          <div class="stat-fila">
+            <dt data-i18n="statMejor">Récord personal</dt>
+            <dd><span class="stat-numero" id="statMejor">0</span></dd>
+          </div>
+          <div class="stat-fila">
+            <dt data-i18n="statAciertos">Tasa de acierto</dt>
+            <dd><span class="stat-numero" id="statAciertos">0%</span></dd>
+          </div>
+        </dl>
       </div>
     </section>
 
-    <nav class="view-toggle container" aria-label="Modos de práctica">
-      <div class="toggle-group" role="tablist">
-        <button class="toggle-btn active" data-view="alfabeto" role="tab" aria-selected="true">Alfabeto</button>
-        <button class="toggle-btn" data-view="aprender" role="tab" aria-selected="false">Aprender</button>
-        <button class="toggle-btn" data-view="escribir" role="tab" aria-selected="false">Escribir</button>
-        <button class="toggle-btn" data-view="dictado" role="tab" aria-selected="false">Dictado</button>
-        <button class="toggle-btn" data-view="traductor" role="tab" aria-selected="false">Traductor</button>
-        <button class="toggle-btn" data-view="cronometro" role="tab" aria-selected="false">Reto</button>
-      </div>
+    <hr class="regla" />
+
+    <!-- Navegación entre vistas -->
+    <nav class="vista-nav page" aria-label="Modos de práctica">
+      <ul class="vista-nav-lista" role="tablist">
+        <li><button class="nav-link active" data-view="alfabeto" role="tab" aria-selected="true" data-i18n="navAlfabeto">Alfabeto</button></li>
+        <li><button class="nav-link" data-view="aprender" role="tab" aria-selected="false" data-i18n="navAprender">Aprender</button></li>
+        <li><button class="nav-link" data-view="escribir" role="tab" aria-selected="false" data-i18n="navEscribir">Escribir</button></li>
+        <li><button class="nav-link" data-view="dictado" role="tab" aria-selected="false" data-i18n="navDictado">Dictado</button></li>
+        <li><button class="nav-link" data-view="traductor" role="tab" aria-selected="false" data-i18n="navTraductor">Traductor</button></li>
+        <li><button class="nav-link" data-view="cronometro" role="tab" aria-selected="false" data-i18n="navCronometro">Reto</button></li>
+      </ul>
     </nav>
 
+    <hr class="regla" />
+
     <!-- Vista: Alfabeto -->
-    <section id="vistaAlfabeto" class="vista container" aria-label="Alfabeto braille">
-      <div class="vista-header">
-        <h2>Explora el alfabeto</h2>
-        <p class="vista-desc">Pasa el cursor o toca cualquier caracter para ver su representación en braille y los puntos activos.</p>
-        <div class="filters">
-          <button class="filter-btn active" data-categoria="letras">Letras</button>
-          <button class="filter-btn" data-categoria="numeros">Números</button>
-          <button class="filter-btn" data-categoria="puntuacion">Puntuación</button>
-        </div>
+    <section id="vistaAlfabeto" class="vista page" aria-label="Alfabeto braille">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionAlfabetoNumero">I.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionAlfabetoTitulo">El alfabeto entero</h2>
+        <p class="seccion-desc" data-i18n="seccionAlfabetoDesc">
+          Pase el cursor o toque cualquier caracter para conocer su representación y los puntos que lo componen.
+        </p>
+      </header>
+      <div class="filtros">
+        <button class="filtro active" data-categoria="letras" data-i18n="filtroLetras">Letras</button>
+        <button class="filtro" data-categoria="numeros" data-i18n="filtroNumeros">Números</button>
+        <button class="filtro" data-categoria="puntuacion" data-i18n="filtroPuntuacion">Puntuación</button>
       </div>
       <div id="alfabetoGrid" class="alfabeto-grid"></div>
-      <article class="info-panel" id="caracterDestacado" hidden>
+      <article class="caracter-detalle" id="caracterDestacado" hidden>
         <div class="info-celda" id="celdaDestacada"></div>
         <div class="info-texto">
-          <span class="info-label">Caracter</span>
+          <span class="info-label" data-i18n="infoLabel">Caracter</span>
           <span class="info-caracter" id="caracterTexto"></span>
           <span class="info-puntos" id="puntosTexto"></span>
           <span class="info-nota" id="notaTexto"></span>
@@ -129,140 +144,162 @@
     </section>
 
     <!-- Vista: Aprender -->
-    <section id="vistaAprender" class="vista container hidden" aria-label="Modo aprender">
-      <div class="vista-header">
-        <h2>Aprender</h2>
-        <p class="vista-desc">Te mostramos una celda braille. Identifica el caracter.</p>
-        <div class="nivel-selector">
-          <label for="nivelAprender">Nivel</label>
-          <div class="dropdown" id="dropdownNivel">
-            <button type="button" class="dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
-              <span class="dropdown-value">1 · Vocales</span>
-              <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <ul class="dropdown-menu" role="listbox" aria-label="Seleccionar nivel">
-              <li role="option" data-value="1" class="selected">1 · Vocales</li>
-              <li role="option" data-value="2">2 · Consonantes simples</li>
-              <li role="option" data-value="3">3 · Alfabeto completo</li>
-              <li role="option" data-value="4">4 · Con números</li>
-              <li role="option" data-value="5">5 · Todo</li>
-            </ul>
-          </div>
+    <section id="vistaAprender" class="vista page hidden" aria-label="Modo aprender">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionAprenderNumero">II.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionAprenderTitulo">Reconocer una celda</h2>
+        <p class="seccion-desc" data-i18n="seccionAprenderDesc">
+          Le mostramos una celda braille. Identifique a qué caracter corresponde entre las opciones.
+        </p>
+      </header>
+      <div class="nivel-fila">
+        <span class="cintillo" data-i18n="nivelLabel">Nivel</span>
+        <div class="dropdown" id="dropdownNivel">
+          <button type="button" class="dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+            <span class="dropdown-value">I · Vocales</span>
+            <span class="dropdown-chevron" aria-hidden="true">↓</span>
+          </button>
+          <ul class="dropdown-menu" role="listbox" aria-label="Nivel">
+            <li role="option" data-value="1" class="selected" data-i18n="nivel1">I · Vocales</li>
+            <li role="option" data-value="2" data-i18n="nivel2">II · Consonantes</li>
+            <li role="option" data-value="3" data-i18n="nivel3">III · Alfabeto completo</li>
+            <li role="option" data-value="4" data-i18n="nivel4">IV · Con números</li>
+            <li role="option" data-value="5" data-i18n="nivel5">V · Todo el repertorio</li>
+          </ul>
         </div>
       </div>
       <div class="ejercicio">
         <div class="celda-grande" id="celdaAprender"></div>
-        <p class="instruccion">¿Qué caracter es este?</p>
-        <div id="opcionesAprender" class="opciones-grid"></div>
-        <div id="feedbackAprender" class="feedback"></div>
+        <p class="pregunta" data-i18n="preguntaCaracter">¿Qué caracter es este?</p>
+        <div id="opcionesAprender" class="opciones"></div>
+        <p id="feedbackAprender" class="feedback"></p>
       </div>
     </section>
 
     <!-- Vista: Escribir -->
-    <section id="vistaEscribir" class="vista container hidden" aria-label="Modo escribir">
-      <div class="vista-header">
-        <h2>Escribir</h2>
-        <p class="vista-desc">Te damos un caracter. Activa los puntos correctos en la celda haciendo clic.</p>
-      </div>
+    <section id="vistaEscribir" class="vista page hidden" aria-label="Modo escribir">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionEscribirNumero">III.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionEscribirTitulo">Trazar los puntos</h2>
+        <p class="seccion-desc" data-i18n="seccionEscribirDesc">
+          Le damos un caracter. Active los puntos correspondientes en la celda en blanco.
+        </p>
+      </header>
       <div class="ejercicio">
         <div class="prompt-caracter" id="promptEscribir">A</div>
-        <p class="instruccion">Activa los puntos correspondientes.</p>
+        <p class="pregunta" data-i18n="instruccionEscribir">Active los puntos correspondientes.</p>
         <div class="celda-grande celda-editable" id="celdaEscribir"></div>
         <div class="acciones">
-          <button id="btnComprobarEscribir" class="btn-primary" type="button">Comprobar</button>
-          <button id="btnLimpiarEscribir" class="btn-secondary" type="button">Limpiar</button>
+          <button id="btnComprobarEscribir" class="btn-relleno" type="button" data-i18n="btnComprobar">Comprobar</button>
+          <button id="btnLimpiarEscribir" class="btn-linea" type="button" data-i18n="btnLimpiar">Limpiar</button>
         </div>
-        <div id="feedbackEscribir" class="feedback"></div>
-        <p class="ayuda-teclado">
-          Atajos: usa las teclas <kbd>F D S J K L</kbd> para activar los puntos 1 a 6 (estilo Perkins).
+        <p id="feedbackEscribir" class="feedback"></p>
+        <p class="nota-pie">
+          <span data-i18n="ayudaTecladoTexto">Atajos. Use las teclas</span>
+          <kbd>F</kbd><kbd>D</kbd><kbd>S</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd>
+          <span data-i18n="ayudaTecladoCierre">para activar los puntos 1 a 6, estilo Perkins.</span>
         </p>
       </div>
     </section>
 
     <!-- Vista: Dictado -->
-    <section id="vistaDictado" class="vista container hidden" aria-label="Modo dictado">
-      <div class="vista-header">
-        <h2>Dictado</h2>
-        <p class="vista-desc">Escucha la palabra y escríbela en braille. Toca el botón de audio cuando quieras repetir.</p>
-      </div>
+    <section id="vistaDictado" class="vista page hidden" aria-label="Modo dictado">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionDictadoNumero">IV.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionDictadoTitulo">Escribir al oído</h2>
+        <p class="seccion-desc" data-i18n="seccionDictadoDesc">
+          Escuche la palabra y escríbala en braille. Pulse el botón para volver a oírla.
+        </p>
+      </header>
       <div class="ejercicio">
-        <button id="btnReproducir" class="btn-audio" type="button" aria-label="Reproducir palabra">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-          </svg>
-          <span>Reproducir</span>
+        <button id="btnReproducir" class="btn-audio" type="button">
+          <span class="btn-audio-icono" aria-hidden="true">♪</span>
+          <span data-i18n="btnReproducir">Reproducir</span>
         </button>
-        <p id="palabraActual" class="palabra-actual"></p>
+        <p id="palabraActual" class="palabra-meta"></p>
         <div class="dictado-celdas" id="celdasDictado"></div>
         <div class="acciones">
-          <button id="btnComprobarDictado" class="btn-primary" type="button">Comprobar</button>
-          <button id="btnSaltarDictado" class="btn-secondary" type="button">Otra palabra</button>
+          <button id="btnComprobarDictado" class="btn-relleno" type="button" data-i18n="btnComprobar">Comprobar</button>
+          <button id="btnSaltarDictado" class="btn-linea" type="button" data-i18n="btnOtra">Otra palabra</button>
         </div>
-        <div id="feedbackDictado" class="feedback"></div>
+        <p id="feedbackDictado" class="feedback"></p>
       </div>
     </section>
 
     <!-- Vista: Traductor -->
-    <section id="vistaTraductor" class="vista container hidden" aria-label="Traductor de braille">
-      <div class="vista-header">
-        <h2>Traductor</h2>
-        <p class="vista-desc">Escribe en cualquier lado: el otro se actualiza solo.</p>
-      </div>
+    <section id="vistaTraductor" class="vista page hidden" aria-label="Traductor de braille">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionTraductorNumero">V.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionTraductorTitulo">Conversión a la vista</h2>
+        <p class="seccion-desc" data-i18n="seccionTraductorDesc">
+          Escriba en un lado, el otro se actualiza en tiempo real.
+        </p>
+      </header>
       <div class="traductor">
         <div class="traductor-bloque">
-          <label for="traductorTexto">Texto</label>
-          <textarea id="traductorTexto" placeholder="Escribe aquí..." rows="6"></textarea>
+          <span class="cintillo" data-i18n="labelTexto">Texto</span>
+          <textarea id="traductorTexto" data-i18n-placeholder="placeholderTexto" placeholder="Escriba aquí..." rows="6"></textarea>
         </div>
         <div class="traductor-bloque">
-          <label>Braille</label>
+          <span class="cintillo" data-i18n="labelBraille">Braille</span>
           <div id="traductorBraille" class="traductor-braille" aria-live="polite"></div>
-          <button id="btnCopiarBraille" class="btn-ghost" type="button">Copiar braille</button>
+          <button id="btnCopiarBraille" class="btn-linea" type="button" data-i18n="btnCopiar">Copiar braille</button>
         </div>
       </div>
     </section>
 
-    <!-- Vista: Cronómetro -->
-    <section id="vistaCronometro" class="vista container hidden" aria-label="Modo cronometrado">
-      <div class="vista-header">
-        <h2>Reto cronometrado</h2>
-        <p class="vista-desc">Identifica el mayor número de caracteres en 60 segundos.</p>
-      </div>
+    <!-- Vista: Reto -->
+    <section id="vistaCronometro" class="vista page hidden" aria-label="Reto cronometrado">
+      <header class="seccion-encabezado">
+        <span class="seccion-num" data-i18n="seccionRetoNumero">VI.</span>
+        <h2 class="seccion-titulo" data-i18n="seccionRetoTitulo">Contra el reloj</h2>
+        <p class="seccion-desc" data-i18n="seccionRetoDesc">
+          Identifique el mayor número de caracteres en sesenta segundos.
+        </p>
+      </header>
       <div class="ejercicio">
-        <div class="reto-stats">
-          <div class="stat">
-            <span class="stat-value" id="retoTiempo">60</span>
-            <span class="stat-label">segundos</span>
+        <dl class="reto-stats">
+          <div class="reto-stat">
+            <dt data-i18n="retoSegundos">segundos</dt>
+            <dd><span id="retoTiempo">60</span></dd>
           </div>
-          <div class="stat">
-            <span class="stat-value" id="retoAciertos">0</span>
-            <span class="stat-label">aciertos</span>
+          <div class="reto-stat">
+            <dt data-i18n="retoAciertosLabel">aciertos</dt>
+            <dd><span id="retoAciertos">0</span></dd>
           </div>
-          <div class="stat">
-            <span class="stat-value" id="retoFallos">0</span>
-            <span class="stat-label">fallos</span>
+          <div class="reto-stat">
+            <dt data-i18n="retoFallosLabel">fallos</dt>
+            <dd><span id="retoFallos">0</span></dd>
           </div>
-        </div>
+        </dl>
         <div id="retoArea">
-          <button id="btnIniciarReto" class="btn-primary btn-grande" type="button">Empezar reto</button>
+          <button id="btnIniciarReto" class="btn-relleno btn-grande" type="button" data-i18n="btnEmpezarReto">Empezar reto</button>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span>Practica Braille</span>
-      <span aria-hidden="true">·</span>
-      <span id="anioActual"></span>
-      <span aria-hidden="true">·</span>
-      <a href="#" id="linkInstall" class="footer-link hidden">Instalar como app</a>
+  <hr class="regla regla-doble" />
+
+  <footer class="colofon page">
+    <div class="colofon-grid">
+      <div>
+        <p class="cintillo" data-i18n="colofonTitulo">Colofón</p>
+        <p class="colofon-texto" data-i18n="colofonTexto">
+          Compuesto en Fraunces y Source Serif. Practica Braille es un manual de código abierto sin dependencias externas.
+        </p>
+      </div>
+      <div class="colofon-meta">
+        <p><span id="anioActual"></span></p>
+        <p><a href="#" id="linkInstall" class="hidden" data-i18n="instalar">Instalar como manual</a></p>
+        <p class="colofon-cierre" data-i18n="cierre">Hecho con curiosidad</p>
+      </div>
     </div>
   </footer>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script src="traducciones.js"></script>
   <script src="braille-data.js"></script>
   <script src="script.js"></script>
 </body>

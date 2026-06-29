@@ -1,10 +1,11 @@
-const CACHE_NAME = "braille-v2";
+const CACHE_NAME = "braille-v3";
 const ARCHIVOS = [
   "/",
   "/index.html",
   "/styles.css",
   "/script.js",
   "/braille-data.js",
+  "/traducciones.js",
   "/manifest.json",
   "/favicon.svg",
 ];
