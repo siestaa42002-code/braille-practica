@@ -26,7 +26,6 @@ const estado = {
   reto: { activo: false, tiempoRestante: 60, aciertos: 0, fallos: 0, caracterActual: null, intervalo: null },
 };
 
-// Exponer estado globalmente para que traducciones.js lo lea
 window.estado = estado;
 
 // ===========================================================================
@@ -34,7 +33,8 @@ window.estado = estado;
 // ===========================================================================
 
 function anunciar(mensaje) {
-  document.getElementById("anuncioSr").textContent = mensaje;
+  const el = document.getElementById("anuncioSr");
+  if (el) el.textContent = mensaje;
 }
 
 function mostrarToast(mensaje, duracion = 2200) {
@@ -71,18 +71,6 @@ function crearCeldaBraille(puntosActivos = [], { interactiva = false, tamano = "
   return contenedor;
 }
 
-function formatearFecha() {
-  const meses = estado.idioma === "es"
-    ? ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-    : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const hoy = new Date();
-  return `${meses[hoy.getMonth()]} ${hoy.getFullYear()}`;
-}
-
-function actualizarFechaCabecera() {
-  document.getElementById("fechaActual").textContent = formatearFecha();
-}
-
 // ===========================================================================
 // Estadísticas
 // ===========================================================================
@@ -96,10 +84,14 @@ function guardarEstadisticas() {
 }
 
 function actualizarStatsDOM() {
-  document.getElementById("statRacha").textContent = estado.racha;
-  document.getElementById("statMejor").textContent = estado.mejorRacha;
-  const porcentaje = estado.totalIntentos === 0 ? "0%" : Math.round((estado.totalAciertos / estado.totalIntentos) * 100) + "%";
-  document.getElementById("statAciertos").textContent = porcentaje;
+  const r = document.getElementById("statRacha");
+  const m = document.getElementById("statMejor");
+  const a = document.getElementById("statAciertos");
+  if (r) r.textContent = estado.racha;
+  if (m) m.textContent = estado.mejorRacha;
+  if (a) {
+    a.textContent = estado.totalIntentos === 0 ? "0%" : Math.round((estado.totalAciertos / estado.totalIntentos) * 100) + "%";
+  }
 }
 
 function registrarAcierto() {
@@ -121,11 +113,11 @@ function registrarFallo() {
 // ===========================================================================
 
 function cambiarVista(vista) {
-  document.querySelectorAll(".nav-link[data-view]").forEach((b) => {
+  document.querySelectorAll(".nav-item[data-view]").forEach((b) => {
     b.classList.remove("active");
     b.setAttribute("aria-selected", "false");
   });
-  const btn = document.querySelector(`.nav-link[data-view="${vista}"]`);
+  const btn = document.querySelector(`.nav-item[data-view="${vista}"]`);
   if (btn) {
     btn.classList.add("active");
     btn.setAttribute("aria-selected", "true");
@@ -141,26 +133,17 @@ function cambiarVista(vista) {
     traductor: "vistaTraductor",
     cronometro: "vistaCronometro",
   };
-  document.getElementById(mapa[vista]).classList.remove("hidden");
+  const target = document.getElementById(mapa[vista]);
+  if (target) target.classList.remove("hidden");
 
   if (vista === "aprender") siguienteEjercicioAprender();
   if (vista === "escribir") siguienteEjercicioEscribir();
   if (vista === "dictado") siguienteDictado();
-
-  // Scroll a la sección
-  document.getElementById(mapa[vista]).scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function inicializarToggleVista() {
-  document.querySelectorAll(".nav-link[data-view]").forEach((btn) => {
+  document.querySelectorAll(".nav-item[data-view]").forEach((btn) => {
     btn.addEventListener("click", () => cambiarVista(btn.dataset.view));
-  });
-  // Links del índice
-  document.querySelectorAll("[data-vista]").forEach((a) => {
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      cambiarVista(a.dataset.vista);
-    });
   });
 }
 
@@ -217,7 +200,7 @@ function destacarCaracter(item, marcarActivo = true) {
   });
 
   document.getElementById("caracterTexto").textContent = item.caracter;
-  document.getElementById("puntosTexto").textContent = item.puntos.join(" · ");
+  document.getElementById("puntosTexto").textContent = `Puntos ${item.puntos.join(" · ")}`;
   document.getElementById("notaTexto").textContent = item.nota || "";
 }
 
@@ -420,8 +403,8 @@ function renderCeldasDictado() {
   estado.dictado.celdas.forEach((puntos, i) => {
     const celda = crearCeldaBraille([...puntos], { interactiva: true });
     if (i === estado.dictado.indiceActivo) {
-      celda.style.outline = "2px solid var(--acento)";
-      celda.style.outlineOffset = "2px";
+      celda.style.borderColor = "var(--dorado)";
+      celda.style.boxShadow = "0 0 0 3px rgba(255, 214, 10, 0.2)";
     }
     celda.dataset.indice = i;
     celda.querySelectorAll(".punto").forEach((p) => {
@@ -602,13 +585,13 @@ function terminarReto() {
   const area = document.getElementById("retoArea");
   area.innerHTML = `
     <div style="text-align: center;">
-      <p style="font-family: var(--serif-display); font-size: 1.75rem; font-style: italic; margin-bottom: 0.5rem;">
+      <p style="font-family: var(--geist); font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;">
         ${t("retoTerminado")}
       </p>
-      <p style="color: var(--tinta-suave); margin-bottom: 2rem; font-style: italic;">
+      <p style="color: var(--texto-medio); margin-bottom: 2rem;">
         ${t("retoFinal", { a: estado.reto.aciertos, f: estado.reto.fallos })}
       </p>
-      <button id="btnReiniciarReto" class="btn-relleno btn-grande" type="button">${t("btnVolver")}</button>
+      <button id="btnReiniciarReto" class="btn-primario btn-grande" type="button">${t("btnVolver")}</button>
     </div>
   `;
   document.getElementById("btnReiniciarReto").addEventListener("click", iniciarReto);
@@ -688,19 +671,23 @@ function configurarDropdown(id, onChange) {
 }
 
 // ===========================================================================
-// Tema y PWA
+// Tema, easter egg y PWA
 // ===========================================================================
 
 function aplicarTema() {
   document.documentElement.setAttribute("data-theme", estado.tema);
-  const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) {
-    metaTheme.setAttribute("content", estado.tema === "claro" ? "#EEE7D3" : "#1A1814");
-  }
-  const iconoTema = document.getElementById("iconoTema");
-  if (iconoTema) {
-    iconoTema.textContent = estado.tema === "claro" ? "◐" : "◑";
-  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", estado.tema === "claro" ? "#FAFAF7" : "#0A0A0C");
+  const icono = document.getElementById("iconoTema");
+  if (icono) icono.textContent = estado.tema === "claro" ? "◐" : "◑";
+}
+
+function renderFirmaBraille() {
+  // Easter egg: el nombre Santiago en braille en el footer
+  const nombre = "santiago";
+  const braille = textoABraille(nombre, "es");
+  const el = document.getElementById("firmaBraille");
+  if (el) el.textContent = braille;
 }
 
 let deferredInstallPrompt = null;
@@ -716,27 +703,31 @@ function inicializarPWA() {
     document.getElementById("linkInstall").classList.remove("hidden");
   });
 
-  document.getElementById("linkInstall").addEventListener("click", async (e) => {
-    e.preventDefault();
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    if (outcome === "accepted") {
-      document.getElementById("linkInstall").classList.add("hidden");
-    }
-    deferredInstallPrompt = null;
-  });
+  const linkInstall = document.getElementById("linkInstall");
+  if (linkInstall) {
+    linkInstall.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === "accepted") {
+        linkInstall.classList.add("hidden");
+      }
+      deferredInstallPrompt = null;
+    });
+  }
 }
 
 // ===========================================================================
-// Sincronizar selección inicial de dropdowns con el idioma guardado
+// Sincronizar selección inicial
 // ===========================================================================
 
 function sincronizarDropdownIdiomaInicial() {
   document.querySelectorAll("#dropdownIdioma li").forEach((li) => {
     li.classList.toggle("selected", li.dataset.value === estado.idioma);
     if (li.dataset.value === estado.idioma) {
-      document.querySelector("#dropdownIdioma .dropdown-value").textContent = li.textContent;
+      const valor = li.dataset.value === "es" ? "ES" : "EN";
+      document.querySelector("#dropdownIdioma .dropdown-value").textContent = valor;
     }
   });
 }
@@ -746,12 +737,14 @@ function sincronizarDropdownIdiomaInicial() {
 // ===========================================================================
 
 function init() {
-  document.getElementById("anioActual").textContent = new Date().getFullYear();
+  const anio = document.getElementById("anioActual");
+  if (anio) anio.textContent = new Date().getFullYear();
+
   aplicarTema();
   aplicarTraducciones();
-  actualizarFechaCabecera();
   actualizarStatsDOM();
   sincronizarDropdownIdiomaInicial();
+  renderFirmaBraille();
 
   renderAlfabeto();
   inicializarFiltrosAlfabeto();
@@ -761,8 +754,9 @@ function init() {
   configurarDropdown("dropdownIdioma", (valor) => {
     estado.idioma = valor;
     localStorage.setItem(STORAGE.idioma, valor);
+    const dv = document.querySelector("#dropdownIdioma .dropdown-value");
+    if (dv) dv.textContent = valor === "es" ? "ES" : "EN";
     aplicarTraducciones();
-    actualizarFechaCabecera();
     renderAlfabeto();
     document.getElementById("caracterDestacado").hidden = true;
     if (estado.vistaActiva === "aprender") siguienteEjercicioAprender();
