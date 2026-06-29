@@ -693,11 +693,14 @@ function configurarDropdown(id, onChange) {
 
 function aplicarTema() {
   document.documentElement.setAttribute("data-theme", estado.tema);
-  document.querySelector('meta[name="theme-color"]').setAttribute(
-    "content",
-    estado.tema === "claro" ? "#EEE7D3" : "#1A1814"
-  );
-  document.getElementById("iconoTema").textContent = estado.tema === "claro" ? "◐" : "◑";
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute("content", estado.tema === "claro" ? "#EEE7D3" : "#1A1814");
+  }
+  const iconoTema = document.getElementById("iconoTema");
+  if (iconoTema) {
+    iconoTema.textContent = estado.tema === "claro" ? "◐" : "◑";
+  }
 }
 
 let deferredInstallPrompt = null;
