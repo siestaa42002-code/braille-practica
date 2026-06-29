@@ -1,4 +1,4 @@
-const CACHE_NAME = "braille-v1";
+const CACHE_NAME = "braille-v2";
 const ARCHIVOS = [
   "/",
   "/index.html",

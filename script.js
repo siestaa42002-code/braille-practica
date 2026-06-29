@@ -20,27 +20,10 @@ const estado = {
   mejorRacha: parseInt(localStorage.getItem(STORAGE.mejorRacha), 10) || 0,
   totalIntentos: parseInt(localStorage.getItem(STORAGE.totalIntentos), 10) || 0,
   totalAciertos: parseInt(localStorage.getItem(STORAGE.totalAciertos), 10) || 0,
-  aprender: {
-    nivel: 1,
-    caracterActual: null,
-  },
-  escribir: {
-    caracterActual: null,
-    puntosActivos: new Set(),
-  },
-  dictado: {
-    palabraActual: "",
-    celdas: [],
-    indiceActivo: 0,
-  },
-  reto: {
-    activo: false,
-    tiempoRestante: 60,
-    aciertos: 0,
-    fallos: 0,
-    caracterActual: null,
-    intervalo: null,
-  },
+  aprender: { nivel: 1, caracterActual: null },
+  escribir: { caracterActual: null, puntosActivos: new Set() },
+  dictado: { palabraActual: "", celdas: [], indiceActivo: 0 },
+  reto: { activo: false, tiempoRestante: 60, aciertos: 0, fallos: 0, caracterActual: null, intervalo: null },
 };
 
 // ===========================================================================
@@ -48,8 +31,7 @@ const estado = {
 // ===========================================================================
 
 function anunciar(mensaje) {
-  const el = document.getElementById("anuncioSr");
-  el.textContent = mensaje;
+  document.getElementById("anuncioSr").textContent = mensaje;
 }
 
 function mostrarToast(mensaje, duracion = 2200) {
@@ -64,18 +46,12 @@ function elementoAleatorio(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Crea el DOM de una celda braille
-// Si interactiva = true, los puntos son botones clicables
 function crearCeldaBraille(puntosActivos = [], { interactiva = false, tamano = "normal" } = {}) {
   const contenedor = document.createElement("div");
   contenedor.className = tamano === "grande" ? "celda-grande" : tamano === "alfabeto" ? "alfabeto-celda" : "celda";
   if (interactiva) contenedor.classList.add("celda-editable");
 
-  // Orden de los puntos en grid CSS: el grid es 2 columnas x 3 filas.
-  // Necesitamos: punto 1 (top-left), punto 4 (top-right), punto 2 (middle-left),
-  // punto 5 (middle-right), punto 3 (bottom-left), punto 6 (bottom-right).
   const orden = [1, 4, 2, 5, 3, 6];
-
   orden.forEach((numero) => {
     const punto = interactiva ? document.createElement("button") : document.createElement("span");
     punto.className = "punto";
@@ -93,7 +69,7 @@ function crearCeldaBraille(puntosActivos = [], { interactiva = false, tamano = "
 }
 
 // ===========================================================================
-// Estadísticas globales
+// Estadísticas
 // ===========================================================================
 
 function guardarEstadisticas() {
@@ -107,9 +83,7 @@ function guardarEstadisticas() {
 function actualizarStatsDOM() {
   document.getElementById("statRacha").textContent = estado.racha;
   document.getElementById("statMejor").textContent = estado.mejorRacha;
-  const porcentaje = estado.totalIntentos === 0
-    ? "0%"
-    : Math.round((estado.totalAciertos / estado.totalIntentos) * 100) + "%";
+  const porcentaje = estado.totalIntentos === 0 ? "0%" : Math.round((estado.totalAciertos / estado.totalIntentos) * 100) + "%";
   document.getElementById("statAciertos").textContent = porcentaje;
 }
 
@@ -154,7 +128,6 @@ function inicializarToggleVista() {
       };
       document.getElementById(mapa[vista]).classList.remove("hidden");
 
-      // Inicializar la vista si es necesario
       if (vista === "aprender") siguienteEjercicioAprender();
       if (vista === "escribir") siguienteEjercicioEscribir();
       if (vista === "dictado") siguienteDictado();
@@ -251,7 +224,6 @@ function siguienteEjercicioAprender() {
     contenedor.appendChild(punto);
   });
 
-  // Generar opciones: el correcto + 3 distractores del mismo nivel
   const distractores = caracteres.filter((c) => c !== caracter);
   const distractoresAleatorios = [];
   while (distractoresAleatorios.length < 3 && distractores.length > 0) {
@@ -274,14 +246,12 @@ function siguienteEjercicioAprender() {
 
   document.getElementById("feedbackAprender").textContent = "";
   document.getElementById("feedbackAprender").className = "feedback";
-  anunciar(`Nueva celda. Identifica el caracter.`);
+  anunciar("Nueva celda. Identifica el caracter.");
 }
 
 function responderAprender(seleccion, boton) {
   const correcto = estado.aprender.caracterActual;
   const feedback = document.getElementById("feedbackAprender");
-
-  // Deshabilitar todas las opciones
   document.querySelectorAll("#opcionesAprender .opcion-btn").forEach((b) => b.disabled = true);
 
   if (seleccion === correcto) {
@@ -293,7 +263,6 @@ function responderAprender(seleccion, boton) {
     setTimeout(siguienteEjercicioAprender, 900);
   } else {
     boton.classList.add("incorrecta");
-    // Marcar también la correcta
     document.querySelectorAll("#opcionesAprender .opcion-btn").forEach((b) => {
       if (b.textContent === correcto) b.classList.add("correcta");
     });
@@ -310,7 +279,7 @@ function responderAprender(seleccion, boton) {
 // ===========================================================================
 
 function siguienteEjercicioEscribir() {
-  const caracteres = obtenerCaracteresPorNivel(3, estado.idioma); // Alfabeto completo
+  const caracteres = obtenerCaracteresPorNivel(3, estado.idioma);
   const caracter = elementoAleatorio(caracteres);
   estado.escribir.caracterActual = caracter;
   estado.escribir.puntosActivos = new Set();
@@ -375,7 +344,6 @@ function limpiarEscribir() {
   document.getElementById("feedbackEscribir").className = "feedback";
 }
 
-// Atajos de teclado estilo Perkins: f d s j k l = puntos 1 2 3 4 5 6
 function configurarAtajosEscribir() {
   const mapa = { f: 1, d: 2, s: 3, j: 4, k: 5, l: 6 };
   document.addEventListener("keydown", (e) => {
@@ -452,7 +420,7 @@ function renderCeldasDictado() {
 
 function reproducirPalabra() {
   if (!("speechSynthesis" in window)) {
-    mostrarToast("Tu navegador no soporta audio. Lee la palabra abajo:");
+    mostrarToast("Tu navegador no soporta audio.");
     document.getElementById("palabraActual").textContent = estado.dictado.palabraActual;
     return;
   }
@@ -466,7 +434,7 @@ function reproducirPalabra() {
 function comprobarDictado() {
   const palabra = estado.dictado.palabraActual;
   let aciertos = 0;
-  let total = palabra.length;
+  const total = palabra.length;
 
   for (let i = 0; i < palabra.length; i++) {
     const ch = palabra[i].toLowerCase();
@@ -508,7 +476,6 @@ function inicializarTraductor() {
 
   textarea.addEventListener("input", traducirAhora);
 
-  // Texto de ejemplo inicial
   textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
   traducirAhora();
 
@@ -521,7 +488,6 @@ function inicializarTraductor() {
     }
   });
 
-  // Exponer la función para que el cambio de idioma la pueda llamar
   window._retraducirTraductor = () => {
     textarea.value = estado.idioma === "es" ? "hola mundo" : "hello world";
     traducirAhora();
@@ -542,7 +508,6 @@ function iniciarReto() {
   document.getElementById("retoFallos").textContent = 0;
   document.getElementById("retoTiempo").textContent = 60;
 
-  // Reemplazar el botón inicial por el ejercicio
   const area = document.getElementById("retoArea");
   area.innerHTML = `
     <div class="celda-grande" id="celdaReto"></div>
@@ -555,9 +520,7 @@ function iniciarReto() {
   estado.reto.intervalo = setInterval(() => {
     estado.reto.tiempoRestante--;
     document.getElementById("retoTiempo").textContent = estado.reto.tiempoRestante;
-    if (estado.reto.tiempoRestante <= 0) {
-      terminarReto();
-    }
+    if (estado.reto.tiempoRestante <= 0) terminarReto();
   }, 1000);
 }
 
@@ -625,7 +588,6 @@ function terminarReto() {
     </div>
   `;
   document.getElementById("btnReiniciarReto").addEventListener("click", iniciarReto);
-
   anunciar(`Reto terminado. ${estado.reto.aciertos} aciertos y ${estado.reto.fallos} fallos.`);
 }
 
@@ -638,6 +600,24 @@ function configurarDropdown(id, onChange) {
   if (!dropdown) return;
   const toggle = dropdown.querySelector(".dropdown-toggle");
   const menu = dropdown.querySelector(".dropdown-menu");
+
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const li = e.target.closest("li[data-value]");
+    if (!li) return;
+    const valor = li.dataset.value;
+    const texto = li.textContent.replace(/^✓\s*/, "").trim();
+
+    menu.querySelectorAll("li").forEach((item) => item.classList.remove("selected"));
+    li.classList.add("selected");
+    toggle.querySelector(".dropdown-value").textContent = texto;
+
+    dropdown.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+
+    console.log(`[Dropdown ${id}] Cambio a:`, valor);
+    onChange(valor);
+  });
 
   toggle.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -652,20 +632,6 @@ function configurarDropdown(id, onChange) {
     toggle.setAttribute("aria-expanded", !estaAbierto);
   });
 
-  menu.addEventListener("click", (e) => {
-    const li = e.target.closest("li[data-value]");
-    if (!li) return;
-    const valor = li.dataset.value;
-    const texto = li.textContent;
-    menu.querySelectorAll("li").forEach((item) => item.classList.remove("selected"));
-    li.classList.add("selected");
-    dropdown.classList.remove("open");
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.querySelector(".dropdown-value").textContent = texto;
-    onChange(valor);
-  });
-
-  // Teclado
   toggle.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
       e.preventDefault();
@@ -698,7 +664,7 @@ function configurarDropdown(id, onChange) {
 }
 
 // ===========================================================================
-// Tema
+// Tema y PWA
 // ===========================================================================
 
 function aplicarTema() {
@@ -708,10 +674,6 @@ function aplicarTema() {
     estado.tema === "claro" ? "#F5F1E6" : "#14202B"
   );
 }
-
-// ===========================================================================
-// PWA
-// ===========================================================================
 
 let deferredInstallPrompt = null;
 
@@ -764,77 +726,57 @@ function init() {
   inicializarToggleVista();
   inicializarTraductor();
 
-  // Dropdownsfunction configurarDropdown(id, onChange) {
-  const dropdown = document.getElementById(id);
-  if (!dropdown) return;
-  const toggle = dropdown.querySelector(".dropdown-toggle");
-  const menu = dropdown.querySelector(".dropdown-menu");
-
-  // Listener delegado en el menú (más robusto que items individuales)
-  menu.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const li = e.target.closest("li[data-value]");
-    if (!li) return;
-    const valor = li.dataset.value;
-    const texto = li.textContent.replace(/^✓\s*/, "").trim();
-
-    // Actualizar UI
-    menu.querySelectorAll("li").forEach((item) => item.classList.remove("selected"));
-    li.classList.add("selected");
-    toggle.querySelector(".dropdown-value").textContent = texto;
-
-    // Cerrar
-    dropdown.classList.remove("open");
-    toggle.setAttribute("aria-expanded", "false");
-
-    // Llamar callback
-    console.log(`[Dropdown ${id}] Cambio a:`, valor);
-    onChange(valor);
-  });
-
-  // Abrir/cerrar
-  toggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const estaAbierto = dropdown.classList.contains("open");
-    document.querySelectorAll(".dropdown.open").forEach((d) => {
-      if (d !== dropdown) {
-        d.classList.remove("open");
-        d.querySelector(".dropdown-toggle").setAttribute("aria-expanded", "false");
-      }
-    });
-    dropdown.classList.toggle("open", !estaAbierto);
-    toggle.setAttribute("aria-expanded", !estaAbierto);
-  });
-
-  // Teclado en el botón
-  toggle.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
-      e.preventDefault();
-      toggle.click();
-      const primer = menu.querySelector("li");
-      if (primer) primer.focus();
+  // Dropdowns
+  configurarDropdown("dropdownIdioma", (valor) => {
+    estado.idioma = valor;
+    localStorage.setItem(STORAGE.idioma, valor);
+    document.documentElement.lang = valor;
+    renderAlfabeto();
+    document.getElementById("caracterDestacado").hidden = true;
+    if (estado.vistaActiva === "aprender") siguienteEjercicioAprender();
+    if (estado.vistaActiva === "escribir") siguienteEjercicioEscribir();
+    if (estado.vistaActiva === "dictado") siguienteDictado();
+    if (typeof window._retraducirTraductor === "function") {
+      window._retraducirTraductor();
     }
   });
 
-  // Teclado en los items
-  menu.querySelectorAll("li").forEach((li, i, lista) => {
-    li.tabIndex = 0;
-    li.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        (lista[i + 1] || lista[0]).focus();
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        (lista[i - 1] || lista[lista.length - 1]).focus();
-      } else if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        li.click();
-        toggle.focus();
-      } else if (e.key === "Escape") {
-        dropdown.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.focus();
-      }
-    });
+  configurarDropdown("dropdownNivel", (valor) => {
+    estado.aprender.nivel = parseInt(valor, 10);
+    siguienteEjercicioAprender();
   });
+
+  // Tema
+  document.getElementById("btnTema").addEventListener("click", () => {
+    estado.tema = estado.tema === "claro" ? "oscuro" : "claro";
+    localStorage.setItem(STORAGE.tema, estado.tema);
+    aplicarTema();
+  });
+
+  // Botones
+  document.getElementById("btnComprobarEscribir").addEventListener("click", comprobarEscribir);
+  document.getElementById("btnLimpiarEscribir").addEventListener("click", limpiarEscribir);
+  document.getElementById("btnReproducir").addEventListener("click", reproducirPalabra);
+  document.getElementById("btnComprobarDictado").addEventListener("click", comprobarDictado);
+  document.getElementById("btnSaltarDictado").addEventListener("click", siguienteDictado);
+  document.getElementById("btnIniciarReto").addEventListener("click", iniciarReto);
+
+  // Cerrar dropdowns al hacer clic fuera
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".dropdown")) {
+      document.querySelectorAll(".dropdown.open").forEach((d) => {
+        d.classList.remove("open");
+        d.querySelector(".dropdown-toggle").setAttribute("aria-expanded", "false");
+      });
+    }
+  });
+
+  configurarAtajosEscribir();
+  inicializarPWA();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
 }
