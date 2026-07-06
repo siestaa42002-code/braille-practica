@@ -1,3 +1,9 @@
+/*
+  Dotzy - Practica Braille
+  Autor: siestaa42002-code
+  https://github.com/siestaa42002-code/braille-practica
+*/
+
 // Traducciones de toda la interfaz para español e inglés
 const TRADUCCIONES = {
   es: {

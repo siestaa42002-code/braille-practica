@@ -1,3 +1,13 @@
+/*
+  Dotzy - Practica Braille
+  Autor: siestaa42002-code
+  Repositorio: https://github.com/siestaa42002-code/braille-practica
+  Sitio: https://dotzy.netlify.app
+  Licencia: MIT
+*/
+
+
+
 // ===========================================================================
 // Estado global
 // ===========================================================================
@@ -203,7 +213,7 @@ function destacarCaracter(item, marcarActivo = true) {
   document.getElementById("puntosTexto").textContent = `Puntos ${item.puntos.join(" · ")}`;
   document.getElementById("notaTexto").textContent = item.nota || "";
 }
-
+console.log("%chttps://github.com/siestaa42002-code/braille-practica", "font-size: 12px; color: #999;");
 function inicializarFiltrosAlfabeto() {
   document.querySelectorAll(".filtro[data-categoria]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -353,7 +363,7 @@ function limpiarEscribir() {
   document.getElementById("feedbackEscribir").textContent = "";
   document.getElementById("feedbackEscribir").className = "feedback";
 }
-
+console.log("%cPractica Braille", "font-size: 14px; color: #666;");
 function configurarAtajosEscribir() {
   const mapa = { f: 1, d: 2, s: 3, j: 4, k: 5, l: 6 };
   document.addEventListener("keydown", (e) => {
@@ -638,6 +648,8 @@ function configurarDropdown(id, onChange) {
     dropdown.classList.toggle("open", !estaAbierto);
     toggle.setAttribute("aria-expanded", !estaAbierto);
   });
+  
+console.log("%cDotzy", "font-size: 28px; font-weight: bold; color: #FFD60A;");
 
   toggle.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
@@ -803,3 +815,7 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
+
+
+
+console.log("%cSi encuentras este proyecto copiado sin credito, avisa en GitHub.", "font-size: 11px; color: #999;");

@@ -1,3 +1,9 @@
+/*
+  Dotzy - Practica Braille
+  Autor: siestaa42002-code
+  https://github.com/siestaa42002-code/braille-practica
+*/
+
 // Datos de braille: mapa de caracter a puntos activos (1-6) en una celda braille.
 // Convención de puntos:
 //   1 . 4
