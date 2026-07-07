@@ -29,6 +29,8 @@
   --texto-debil: #C8C8CD;
   --borde: rgba(13, 13, 15, 0.08);
   --borde-fuerte: rgba(13, 13, 15, 0.14);
+  --dorado-texto: #8A6600;
+  --dorado-link: #9E7500;
   --sombra-card: 0 1px 2px rgba(13, 13, 15, 0.04), 0 4px 12px rgba(13, 13, 15, 0.04);
   --sombra-flotante: 0 8px 32px rgba(13, 13, 15, 0.06), 0 2px 6px rgba(13, 13, 15, 0.04);
   --punto-vacio: rgba(13, 13, 15, 0.04);
@@ -48,6 +50,8 @@
   --texto-debil: #3A3A42;
   --borde: rgba(255, 255, 255, 0.08);
   --borde-fuerte: rgba(255, 255, 255, 0.16);
+  --dorado-texto: #FFD60A;
+  --dorado-link: #FFD60A;
   --sombra-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
   --sombra-flotante: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
   --punto-vacio: rgba(255, 255, 255, 0.05);
@@ -197,6 +201,9 @@ body {
   color: var(--dorado);
 }
 
+/* En modo claro el nav-item.active tiene fondo negro,
+   así que el dorado brillante sí contrasta bien ahí */
+
 .nav-item:focus-visible {
   outline: 2px solid var(--dorado);
   outline-offset: 2px;
@@ -305,6 +312,8 @@ body {
   color: var(--dorado);
 }
 
+/* El fondo del selected es negro, así que dorado brillante contrasta bien */
+
 .icon-btn {
   background: var(--surface);
   color: var(--texto);
@@ -318,7 +327,7 @@ body {
 
 .icon-btn:hover {
   border-color: var(--borde-fuerte);
-  color: var(--dorado);
+  color: var(--dorado-texto);
 }
 
 .icon-btn:focus-visible {
@@ -467,8 +476,8 @@ body {
 .vista-numero {
   font-family: var(--geist-mono);
   font-size: 0.8rem;
-  color: var(--dorado);
-  font-weight: 500;
+  color: var(--dorado-texto);
+  font-weight: 600;
   letter-spacing: 0.05em;
 }
 
@@ -1065,7 +1074,7 @@ kbd {
 .firma-braille {
   font-family: var(--geist-mono);
   font-size: 1.1rem;
-  color: var(--dorado);
+  color: var(--dorado-texto);
   margin-left: 0.4rem;
   letter-spacing: 0.05em;
 }
@@ -1080,9 +1089,9 @@ kbd {
 }
 
 .footer-meta a {
-  color: var(--dorado);
+  color: var(--dorado-link);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .footer-meta a:hover {
@@ -1214,4 +1223,4 @@ kbd {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
+} 
