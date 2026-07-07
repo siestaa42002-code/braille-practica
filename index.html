@@ -1,14 +1,3 @@
-<!--
-  Dotzy - Practica Braille
-  Autor: siestaa42002-code
-  Repositorio: https://github.com/siestaa42002-code/braille-practica
-  Sitio: https://dotzy.netlify.app
-  Año: 2026
-  Licencia: MIT (ver LICENSE)
-
-  Este proyecto es de codigo abierto pero requiere atribucion.
-  Si usas o modificas este codigo, mantene este aviso.
--->
 <!DOCTYPE html>
 <html lang="es" data-theme="claro">
 <head>
@@ -18,12 +7,20 @@
   <meta name="theme-color" content="#FAFAF7" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Practica Braille" />
-  <meta property="og:description" content="Aprende braille con ejercicios interactivos." />
-  <meta property="og:image" content="/og-image.svg" />
+  <meta property="og:site_name" content="Dotzy" />
+  <meta property="og:title" content="Dotzy · Aprende braille de forma interactiva" />
+  <meta property="og:description" content="Manual interactivo para aprender el alfabeto braille. Seis ejercicios, dos idiomas, funciona sin conexión." />
+  <meta property="og:image" content="https://dotzy.netlify.app/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://dotzy.netlify.app" />
+  <meta property="og:locale" content="es_CO" />
+  <meta property="og:locale:alternate" content="en_US" />
 
-  <meta name="author" content="siestaa42002-code" />
-  <meta name="copyright" content="2026 siestaa42002-code" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dotzy · Aprende braille" />
+  <meta name="twitter:description" content="Manual interactivo para aprender el alfabeto braille. Seis ejercicios, dos idiomas, funciona sin conexión." />
+  <meta name="twitter:image" content="https://dotzy.netlify.app/og-image.svg" />
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
@@ -64,14 +61,17 @@
         <button class="nav-item" data-view="aprender" role="tab" aria-selected="false">
           <span class="nav-num">02</span>
           <span class="nav-label" data-i18n="navAprender">Aprender</span>
+          <span class="nav-badge hidden" data-modo-badge="aprender">0</span>
         </button>
         <button class="nav-item" data-view="escribir" role="tab" aria-selected="false">
           <span class="nav-num">03</span>
           <span class="nav-label" data-i18n="navEscribir">Escribir</span>
+          <span class="nav-badge hidden" data-modo-badge="escribir">0</span>
         </button>
         <button class="nav-item" data-view="dictado" role="tab" aria-selected="false">
           <span class="nav-num">04</span>
           <span class="nav-label" data-i18n="navDictado">Dictado</span>
+          <span class="nav-badge hidden" data-modo-badge="dictado">0</span>
         </button>
         <button class="nav-item" data-view="traductor" role="tab" aria-selected="false">
           <span class="nav-num">05</span>
@@ -80,6 +80,7 @@
         <button class="nav-item" data-view="cronometro" role="tab" aria-selected="false">
           <span class="nav-num">06</span>
           <span class="nav-label" data-i18n="navCronometro">Reto</span>
+          <span class="nav-badge hidden" data-modo-badge="reto">0</span>
         </button>
       </nav>
 
@@ -94,6 +95,9 @@
             <li role="option" data-value="en">EN · English</li>
           </ul>
         </div>
+        <button id="btnSonido" class="icon-btn" type="button" aria-label="Alternar sonido">
+          <span id="iconoSonido">♪</span>
+        </button>
         <button id="btnTema" class="icon-btn" type="button" data-i18n-aria="cambiarTema" aria-label="Cambiar tema">
           <span id="iconoTema">◐</span>
         </button>
@@ -299,7 +303,7 @@
       <footer class="footer">
         <div class="footer-firma">
           <span data-i18n="firmaHecho">Hecho por</span>
-          <span class="firma-nombre">Siesta</span>
+          <span class="firma-nombre">Santiago</span>
           <span class="firma-braille" aria-hidden="true" id="firmaBraille"></span>
         </div>
         <div class="footer-meta">

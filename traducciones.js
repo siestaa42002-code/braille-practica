@@ -3,7 +3,6 @@
   Autor: siestaa42002-code
   https://github.com/siestaa42002-code/braille-practica
 */
-
 // Traducciones de toda la interfaz para español e inglés
 const TRADUCCIONES = {
   es: {
@@ -85,6 +84,12 @@ const TRADUCCIONES = {
     retoTerminado: "Tiempo terminado",
     retoFinal: "{a} aciertos · {f} fallos",
     btnVolver: "Volver a jugar",
+    btnCompartir: "Compartir",
+    nuevoRecord: "Nuevo récord personal",
+    tuRecord: "Tu récord",
+    textoCompartir: "Acabo de conseguir {a} aciertos en el reto de braille de Dotzy. ¿Puedes superarlo?",
+    activarSonido: "Activar sonido",
+    desactivarSonido: "Desactivar sonido",
 
     firmaHecho: "Hecho por",
     instalar: "Instalar app",
@@ -175,6 +180,12 @@ const TRADUCCIONES = {
     retoTerminado: "Time's up",
     retoFinal: "{a} hits · {f} misses",
     btnVolver: "Play again",
+    btnCompartir: "Share",
+    nuevoRecord: "New personal best",
+    tuRecord: "Your best",
+    textoCompartir: "I just got {a} hits in the Dotzy braille challenge. Can you beat it?",
+    activarSonido: "Enable sound",
+    desactivarSonido: "Disable sound",
 
     firmaHecho: "Made by",
     instalar: "Install app",

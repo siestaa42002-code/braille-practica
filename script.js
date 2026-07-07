@@ -4,11 +4,7 @@
   Repositorio: https://github.com/siestaa42002-code/braille-practica
   Sitio: https://dotzy.netlify.app
   Licencia: MIT
-*/
-
-
-
-// ===========================================================================
+*/// ===========================================================================
 // Estado global
 // ===========================================================================
 
@@ -19,6 +15,10 @@ const STORAGE = {
   mejorRacha: "braille:mejorRacha",
   totalIntentos: "braille:total",
   totalAciertos: "braille:aciertos",
+  sonido: "braille:sonido",
+  statsPorModo: "braille:statsPorModo",
+  memoriaAprender: "braille:memoriaAprender",
+  mejorReto: "braille:mejorReto",
 };
 
 const estado = {
@@ -30,6 +30,10 @@ const estado = {
   mejorRacha: parseInt(localStorage.getItem(STORAGE.mejorRacha), 10) || 0,
   totalIntentos: parseInt(localStorage.getItem(STORAGE.totalIntentos), 10) || 0,
   totalAciertos: parseInt(localStorage.getItem(STORAGE.totalAciertos), 10) || 0,
+  sonidoActivo: localStorage.getItem(STORAGE.sonido) !== "off",
+  statsPorModo: JSON.parse(localStorage.getItem(STORAGE.statsPorModo) || '{"aprender":{"aciertos":0,"intentos":0},"escribir":{"aciertos":0,"intentos":0},"dictado":{"aciertos":0,"intentos":0},"reto":{"aciertos":0,"intentos":0}}'),
+  memoriaAprender: JSON.parse(localStorage.getItem(STORAGE.memoriaAprender) || "{}"),
+  mejorReto: parseInt(localStorage.getItem(STORAGE.mejorReto), 10) || 0,
   aprender: { nivel: 1, caracterActual: null },
   escribir: { caracterActual: null, puntosActivos: new Set() },
   dictado: { palabraActual: "", celdas: [], indiceActivo: 0 },
@@ -79,6 +83,123 @@ function crearCeldaBraille(puntosActivos = [], { interactiva = false, tamano = "
   });
 
   return contenedor;
+}
+
+// ===========================================================================
+// Sistema de audio con Web Audio API
+// ===========================================================================
+
+let audioCtx = null;
+
+function inicializarAudio() {
+  if (audioCtx) return audioCtx;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    audioCtx = null;
+  }
+  return audioCtx;
+}
+
+function reproducirTono(frecuencia, duracion, tipo = "sine", volumen = 0.15) {
+  if (!estado.sonidoActivo) return;
+  const ctx = inicializarAudio();
+  if (!ctx) return;
+  try {
+    if (ctx.state === "suspended") ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = tipo;
+    osc.frequency.value = frecuencia;
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(volumen, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duracion);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duracion);
+  } catch (e) {}
+}
+
+function sonidoAcierto() {
+  reproducirTono(660, 0.08, "sine", 0.12);
+  setTimeout(() => reproducirTono(880, 0.14, "sine", 0.12), 60);
+}
+
+function sonidoFallo() {
+  reproducirTono(220, 0.18, "sine", 0.1);
+}
+
+// ===========================================================================
+// Stats por modo
+// ===========================================================================
+
+function guardarStatsPorModo() {
+  localStorage.setItem(STORAGE.statsPorModo, JSON.stringify(estado.statsPorModo));
+}
+
+function registrarStatModo(modo, acierto) {
+  if (!estado.statsPorModo[modo]) {
+    estado.statsPorModo[modo] = { aciertos: 0, intentos: 0 };
+  }
+  estado.statsPorModo[modo].intentos++;
+  if (acierto) estado.statsPorModo[modo].aciertos++;
+  guardarStatsPorModo();
+  actualizarBadgesModo();
+}
+
+function actualizarBadgesModo() {
+  const modos = ["aprender", "escribir", "dictado", "reto"];
+  modos.forEach((modo) => {
+    const badge = document.querySelector(`[data-modo-badge="${modo}"]`);
+    if (badge) {
+      const stats = estado.statsPorModo[modo];
+      if (stats && stats.intentos > 0) {
+        badge.textContent = stats.intentos;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
+  });
+}
+
+// ===========================================================================
+// Repetición espaciada
+// ===========================================================================
+
+function guardarMemoriaAprender() {
+  localStorage.setItem(STORAGE.memoriaAprender, JSON.stringify(estado.memoriaAprender));
+}
+
+function registrarResultadoMemoria(caracter, acierto) {
+  if (!estado.memoriaAprender[caracter]) {
+    estado.memoriaAprender[caracter] = { aciertos: 0, fallos: 0, peso: 1 };
+  }
+  const m = estado.memoriaAprender[caracter];
+  if (acierto) {
+    m.aciertos++;
+    m.peso = Math.max(0.3, m.peso - 0.2);
+  } else {
+    m.fallos++;
+    m.peso = Math.min(5, m.peso + 0.8);
+  }
+  guardarMemoriaAprender();
+}
+
+function elegirCaracterPonderado(caracteres) {
+  const pesos = caracteres.map((c) => {
+    const m = estado.memoriaAprender[c];
+    if (!m) return 2;
+    return m.peso;
+  });
+  const total = pesos.reduce((s, p) => s + p, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < caracteres.length; i++) {
+    r -= pesos[i];
+    if (r <= 0) return caracteres[i];
+  }
+  return caracteres[caracteres.length - 1];
 }
 
 // ===========================================================================
@@ -213,7 +334,7 @@ function destacarCaracter(item, marcarActivo = true) {
   document.getElementById("puntosTexto").textContent = `Puntos ${item.puntos.join(" · ")}`;
   document.getElementById("notaTexto").textContent = item.nota || "";
 }
-console.log("%chttps://github.com/siestaa42002-code/braille-practica", "font-size: 12px; color: #999;");
+
 function inicializarFiltrosAlfabeto() {
   document.querySelectorAll(".filtro[data-categoria]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -232,7 +353,7 @@ function inicializarFiltrosAlfabeto() {
 
 function siguienteEjercicioAprender() {
   const caracteres = obtenerCaracteresPorNivel(estado.aprender.nivel, estado.idioma);
-  const caracter = elementoAleatorio(caracteres);
+  const caracter = elegirCaracterPonderado(caracteres);
   estado.aprender.caracterActual = caracter;
 
   const puntos = obtenerPuntos(caracter, estado.idioma);
@@ -281,6 +402,9 @@ function responderAprender(seleccion, boton) {
     feedback.textContent = t("feedbackCorrecto");
     feedback.className = "feedback acierto";
     registrarAcierto();
+    registrarStatModo("aprender", true);
+    registrarResultadoMemoria(correcto, true);
+    sonidoAcierto();
     anunciar(`${t("anuncioCorrecto")} ${nombreCaracter(correcto)}.`);
     setTimeout(siguienteEjercicioAprender, 900);
   } else {
@@ -291,6 +415,9 @@ function responderAprender(seleccion, boton) {
     feedback.textContent = `${t("feedbackEra")} ${correcto.toUpperCase()}`;
     feedback.className = "feedback fallo";
     registrarFallo();
+    registrarStatModo("aprender", false);
+    registrarResultadoMemoria(correcto, false);
+    sonidoFallo();
     anunciar(`${t("anuncioIncorrecto")} ${nombreCaracter(correcto)}.`);
     setTimeout(siguienteEjercicioAprender, 1600);
   }
@@ -348,12 +475,16 @@ function comprobarEscribir() {
     feedback.textContent = t("feedbackCorrectoSig");
     feedback.className = "feedback acierto";
     registrarAcierto();
+    registrarStatModo("escribir", true);
+    sonidoAcierto();
     anunciar(t("feedbackCorrecto"));
     setTimeout(siguienteEjercicioEscribir, 1100);
   } else {
     feedback.textContent = `${t("feedbackErroneoPuntos")} ${correcto.join(", ")}.`;
     feedback.className = "feedback fallo";
     registrarFallo();
+    registrarStatModo("escribir", false);
+    sonidoFallo();
   }
 }
 
@@ -363,7 +494,7 @@ function limpiarEscribir() {
   document.getElementById("feedbackEscribir").textContent = "";
   document.getElementById("feedbackEscribir").className = "feedback";
 }
-console.log("%cPractica Braille", "font-size: 14px; color: #666;");
+
 function configurarAtajosEscribir() {
   const mapa = { f: 1, d: 2, s: 3, j: 4, k: 5, l: 6 };
   document.addEventListener("keydown", (e) => {
@@ -469,12 +600,16 @@ function comprobarDictado() {
     feedback.textContent = t("feedbackPerfecto", { n: total });
     feedback.className = "feedback acierto";
     registrarAcierto();
+    registrarStatModo("dictado", true);
+    sonidoAcierto();
     document.getElementById("palabraActual").textContent = `"${palabra}"`;
     setTimeout(siguienteDictado, 2500);
   } else {
     feedback.textContent = `${t("feedbackParcial", { a: aciertos, t: total })} "${palabra}".`;
     feedback.className = "feedback fallo";
     registrarFallo();
+    registrarStatModo("dictado", false);
+    sonidoFallo();
     document.getElementById("palabraActual").textContent = `"${palabra}"`;
   }
 }
@@ -581,9 +716,13 @@ function responderReto(seleccion) {
   if (seleccion === estado.reto.caracterActual) {
     estado.reto.aciertos++;
     document.getElementById("retoAciertos").textContent = estado.reto.aciertos;
+    registrarStatModo("reto", true);
+    sonidoAcierto();
   } else {
     estado.reto.fallos++;
     document.getElementById("retoFallos").textContent = estado.reto.fallos;
+    registrarStatModo("reto", false);
+    sonidoFallo();
   }
   siguienteEjercicioReto();
 }
@@ -592,20 +731,73 @@ function terminarReto() {
   clearInterval(estado.reto.intervalo);
   estado.reto.activo = false;
 
+  const puntaje = estado.reto.aciertos;
+  const esRecord = puntaje > estado.mejorReto;
+  if (esRecord) {
+    estado.mejorReto = puntaje;
+    localStorage.setItem(STORAGE.mejorReto, puntaje);
+  }
+
+  const mensajeRecord = esRecord && puntaje > 0
+    ? `<p style="color: var(--dorado-texto); font-weight: 600; margin-bottom: 1.5rem;">${t("nuevoRecord")}</p>`
+    : estado.mejorReto > 0
+      ? `<p style="color: var(--texto-tenue); font-size: 0.9rem; margin-bottom: 1.5rem;">${t("tuRecord")}: ${estado.mejorReto}</p>`
+      : "";
+
   const area = document.getElementById("retoArea");
   area.innerHTML = `
     <div style="text-align: center;">
       <p style="font-family: var(--geist); font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;">
         ${t("retoTerminado")}
       </p>
-      <p style="color: var(--texto-medio); margin-bottom: 2rem;">
+      <p style="color: var(--texto-medio); margin-bottom: 0.75rem; font-size: 1.15rem;">
         ${t("retoFinal", { a: estado.reto.aciertos, f: estado.reto.fallos })}
       </p>
-      <button id="btnReiniciarReto" class="btn-primario btn-grande" type="button">${t("btnVolver")}</button>
+      ${mensajeRecord}
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <button id="btnReiniciarReto" class="btn-primario btn-grande" type="button">${t("btnVolver")}</button>
+        <button id="btnCompartirReto" class="btn-fantasma btn-grande" type="button">${t("btnCompartir")}</button>
+      </div>
     </div>
   `;
   document.getElementById("btnReiniciarReto").addEventListener("click", iniciarReto);
+  document.getElementById("btnCompartirReto").addEventListener("click", compartirReto);
+
+  if (esRecord && puntaje > 0) {
+    sonidoAcierto();
+    setTimeout(sonidoAcierto, 200);
+  }
+
   anunciar(`${t("anuncioRetoTerminado")} ${estado.reto.aciertos}, ${estado.reto.fallos}.`);
+}
+
+async function compartirReto() {
+  const puntaje = estado.reto.aciertos;
+  const fallos = estado.reto.fallos;
+  const texto = t("textoCompartir", { a: puntaje, f: fallos });
+  const url = "https://dotzy.netlify.app";
+
+  const datos = {
+    title: "Dotzy",
+    text: texto,
+    url: url,
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(datos);
+      return;
+    } catch (e) {
+      // Usuario canceló o navegador no lo permitió
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(`${texto}\n${url}`);
+    mostrarToast(t("toastCopiado"));
+  } catch (e) {
+    mostrarToast(t("toastNoCopia"));
+  }
 }
 
 // ===========================================================================
@@ -648,8 +840,6 @@ function configurarDropdown(id, onChange) {
     dropdown.classList.toggle("open", !estaAbierto);
     toggle.setAttribute("aria-expanded", !estaAbierto);
   });
-  
-console.log("%cDotzy", "font-size: 28px; font-weight: bold; color: #FFD60A;");
 
   toggle.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
@@ -755,6 +945,8 @@ function init() {
   aplicarTema();
   aplicarTraducciones();
   actualizarStatsDOM();
+  actualizarBadgesModo();
+  actualizarIconoSonido();
   sincronizarDropdownIdiomaInicial();
   renderFirmaBraille();
 
@@ -790,6 +982,19 @@ function init() {
     aplicarTema();
   });
 
+  const btnSonido = document.getElementById("btnSonido");
+  if (btnSonido) {
+    btnSonido.addEventListener("click", () => {
+      estado.sonidoActivo = !estado.sonidoActivo;
+      localStorage.setItem(STORAGE.sonido, estado.sonidoActivo ? "on" : "off");
+      actualizarIconoSonido();
+      if (estado.sonidoActivo) {
+        inicializarAudio();
+        sonidoAcierto();
+      }
+    });
+  }
+
   document.getElementById("btnComprobarEscribir").addEventListener("click", comprobarEscribir);
   document.getElementById("btnLimpiarEscribir").addEventListener("click", limpiarEscribir);
   document.getElementById("btnReproducir").addEventListener("click", reproducirPalabra);
@@ -810,12 +1015,18 @@ function init() {
   inicializarPWA();
 }
 
+function actualizarIconoSonido() {
+  const icono = document.getElementById("iconoSonido");
+  const btn = document.getElementById("btnSonido");
+  if (icono) icono.textContent = estado.sonidoActivo ? "♪" : "♪̸";
+  if (btn) {
+    btn.style.opacity = estado.sonidoActivo ? "1" : "0.5";
+    btn.setAttribute("aria-label", estado.sonidoActivo ? t("desactivarSonido") : t("activarSonido"));
+  }
+}
+
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
   init();
 }
-
-
-
-console.log("%cSi encuentras este proyecto copiado sin credito, avisa en GitHub.", "font-size: 11px; color: #999;");
